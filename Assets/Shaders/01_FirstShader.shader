@@ -23,6 +23,15 @@
 			//在这里编写Shader代码  HLSLPEOGRAM
 			CGPROGRAM
 			//使用CG语言编写Shader代码
+			float4  _Color;  //float 可用half或者fixed代替       float 32位    half 16位（-6万 - 6万）  fixed 11位（-2 - 2）
+			float4 _Vector;
+			float _Int;
+			float _Float;
+			float _Range;
+
+			sampler2D _Texture2D;
+			samplerCube _Cube;
+			sampler _Texture3D;
 
 			ENDCG
 
