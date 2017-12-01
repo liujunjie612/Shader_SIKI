@@ -1,13 +1,17 @@
 ﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Jey/04_Diffuse Vertex"
+Shader "Jey/07_Specular Vertex"
 {
 
 	Properties
 	{
 		_Diffuse("Diffuse Color",Color) = (1,1,1,1)
+		_Gloss("Gloss", Range(8,200)) = 10
+		_SpecularColor("Specular Color", Color) = (1,1,1,1)
 	}
 
 	SubShader
@@ -27,6 +31,8 @@ Shader "Jey/04_Diffuse Vertex"
 			#pragma fragment frag
 
 				fixed4 _Diffuse;
+				half _Gloss;
+				fixed4 _SpecularColor;
 
 				//application to vertex
 				struct a2v
@@ -54,7 +60,13 @@ Shader "Jey/04_Diffuse Vertex"
 					fixed lightDir = normalize(_WorldSpaceLightPos0.xyz); //对于每个顶点，光的位置就是光的方向（光是平行光）
 
 					fixed3 diffuse = _LightColor0.rgb * max(dot(normalDir, lightDir), 0) * _Diffuse.rgb; //取得漫反射颜色
-					f.color = diffuse + ambient;
+
+					fixed3 reflectDir = normalize(reflect(-lightDir, normalDir));
+
+					fixed3 viewDir = normalize(_WorldSpaceCameraPos.xyz - mul(v.v1, unity_WorldToObject).xyz);
+					fixed3 specular = _SpecularColor.rgb * pow(max(dot(reflectDir, viewDir) ,0), _Gloss);
+
+					f.color = diffuse + ambient + specular;
 					return f;
 				}
 

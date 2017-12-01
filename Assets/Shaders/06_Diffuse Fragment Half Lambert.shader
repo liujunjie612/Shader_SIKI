@@ -2,7 +2,7 @@
 
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Jey/04_Diffuse Vertex"
+Shader "Jey/06_Diffuse Fragment Half Lambert"
 {
 
 	Properties
@@ -38,7 +38,7 @@ Shader "Jey/04_Diffuse Vertex"
 				struct v2f
 				{
 					float4 position: SV_POSITION;
-					fixed3 color: COLOR;
+					fixed3 worldNormalDir: COLOR0;
 				};
 
 				 
@@ -46,21 +46,22 @@ Shader "Jey/04_Diffuse Vertex"
 				{
 					v2f f; 
 					f.position = UnityObjectToClipPos(v.v1);
-
-					fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;  //系统环境光
-
-					fixed3 normalDir = normalize(mul(v.normal,(float3x3)unity_WorldToObject));
-
-					fixed lightDir = normalize(_WorldSpaceLightPos0.xyz); //对于每个顶点，光的位置就是光的方向（光是平行光）
-
-					fixed3 diffuse = _LightColor0.rgb * max(dot(normalDir, lightDir), 0) * _Diffuse.rgb; //取得漫反射颜色
-					f.color = diffuse + ambient;
+					f.worldNormalDir = mul(v.normal,(float3x3)unity_WorldToObject);
 					return f;
 				}
 
 				fixed4 frag(v2f f):SV_Target
 				{
-					return fixed4(f.color,1);
+					fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;  //系统环境光
+
+					fixed3 normalDir = normalize(f.worldNormalDir);
+
+					fixed lightDir = normalize(_WorldSpaceLightPos0.xyz); //对于每个顶点，光的位置就是光的方向（光是平行光）
+					float halfLambert = dot(normalDir, lightDir) * 0.5 + 0.5;
+					fixed3 diffuse = _LightColor0.rgb * halfLambert * _Diffuse.rgb; //取得漫反射颜色
+					fixed3 tempColor = diffuse + ambient;
+
+					return fixed4(tempColor,1);
 				}
 				
 			ENDCG
